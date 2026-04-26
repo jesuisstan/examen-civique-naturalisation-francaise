@@ -197,6 +197,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   inner: {
+    width: '100%',
     maxWidth: MaxContentWidth,
     paddingHorizontal: Spacing.four,
     gap: Spacing.four,

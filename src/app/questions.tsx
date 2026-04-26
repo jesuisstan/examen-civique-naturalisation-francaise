@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
   },
   inner: {
     flex: 1,
+    width: '100%',
   },
   header: {
     paddingHorizontal: Spacing.four,
