@@ -41,3 +41,9 @@ app-example
 # generated native folders
 /ios
 /android
+
+# AI / IDE
+.cursor/
+.vscode/    
+.claude/
+.cursorignore
