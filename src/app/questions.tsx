@@ -1,12 +1,12 @@
 import {
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
   FlatList,
   Platform,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -33,6 +33,12 @@ import {
 import { useQuestions } from '@/hooks/use-questions';
 import type { QcmQuestion } from '@/types/questions';
 
+interface ChipItem {
+  key: string;
+  label: string;
+  value: string | null;
+}
+
 /**
  * Questions tab screen.
  *
@@ -52,14 +58,75 @@ const QuestionsScreen = () => {
   const [selectedTheme, setSelectedTheme] =
     useState<string | null>(null);
 
+  const chipListRef =
+    useRef<FlatList<ChipItem>>(null);
+
+  const chipData = useMemo<ChipItem[]>(
+    () => [
+      {
+        key: '__all__',
+        label: ALL_THEMES_LABEL,
+        value: null,
+      },
+      ...themes.map((t) => ({
+        key: t,
+        label: t,
+        value: t as string | null,
+      })),
+    ],
+    [themes],
+  );
+
   const filteredQuestions = useMemo(
     () => questionsByTheme(selectedTheme),
     [questionsByTheme, selectedTheme],
   );
 
   const handleChipPress = useCallback(
-    (themeName: string | null) => {
-      setSelectedTheme(themeName);
+    (value: string | null, index: number) => {
+      setSelectedTheme(value);
+      chipListRef.current?.scrollToIndex({
+        index,
+        viewPosition: 0.5,
+        animated: true,
+      });
+    },
+    [],
+  );
+
+  const renderChip = useCallback(
+    ({
+      item,
+      index,
+    }: {
+      item: ChipItem;
+      index: number;
+    }) => (
+      <CategoryChip
+        label={item.label}
+        isActive={selectedTheme === item.value}
+        onPress={() =>
+          handleChipPress(item.value, index)
+        }
+      />
+    ),
+    [selectedTheme, handleChipPress],
+  );
+
+  const chipKeyExtractor = useCallback(
+    (item: ChipItem) => item.key,
+    [],
+  );
+
+  const onChipScrollFailed = useCallback(
+    (info: { index: number }) => {
+      setTimeout(() => {
+        chipListRef.current?.scrollToIndex({
+          index: info.index,
+          viewPosition: 0.5,
+          animated: true,
+        });
+      }, 200);
     },
     [],
   );
@@ -129,34 +196,27 @@ const QuestionsScreen = () => {
         </View>
 
         {/* Category filter chips */}
-        <ScrollView
+        <FlatList
+          ref={chipListRef}
           horizontal
+          data={chipData}
+          renderItem={renderChip}
+          keyExtractor={chipKeyExtractor}
+          extraData={selectedTheme}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={
             styles.chipRowContent
           }
-          style={styles.chipRow}>
-          <CategoryChip
-            label={ALL_THEMES_LABEL}
-            isActive={selectedTheme === null}
-            onPress={() => handleChipPress(null)}
-          />
-          {themes.map((t) => (
-            <CategoryChip
-              key={t}
-              label={t}
-              isActive={selectedTheme === t}
-              onPress={() => handleChipPress(t)}
-            />
-          ))}
-        </ScrollView>
+          style={styles.chipRow}
+          onScrollToIndexFailed={onChipScrollFailed}
+        />
 
         {/* Count label */}
         <View style={styles.countRow}>
           <ThemedText
             type="small"
             themeColor="textSecondary">
-            {filteredQuestions.length} questions:
+            {filteredQuestions.length} questions
           </ThemedText>
         </View>
 

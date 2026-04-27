@@ -57,8 +57,8 @@ export const DisclaimerBanner = () => {
         style={[
           styles.container,
           {
-            borderColor: theme.accent,
-            backgroundColor: theme.accentLight,
+            borderColor: theme.warning,
+            backgroundColor: theme.backgroundWarning,
           },
         ]}>
         <View style={styles.header}>
@@ -69,7 +69,7 @@ export const DisclaimerBanner = () => {
               web: 'info',
             }}
             size={16}
-            tintColor={theme.accent}
+            tintColor={theme.warning}
           />
           <ThemedText
             type="small"
