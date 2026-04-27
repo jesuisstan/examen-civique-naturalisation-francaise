@@ -1,3 +1,4 @@
+import { SymbolView } from 'expo-symbols';
 import {
   useCallback,
   useMemo,
@@ -6,7 +7,10 @@ import {
 } from 'react';
 import {
   FlatList,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   Platform,
+  Pressable,
   StyleSheet,
   View,
 } from 'react-native';
@@ -31,6 +35,7 @@ import {
   Spacing,
 } from '@/constants/theme';
 import { useQuestions } from '@/hooks/use-questions';
+import { useTheme } from '@/hooks/use-theme';
 import type { QcmQuestion } from '@/types/questions';
 
 interface ChipItem {
@@ -38,6 +43,9 @@ interface ChipItem {
   label: string;
   value: string | null;
 }
+
+const IS_WEB = Platform.OS === 'web';
+const SCROLL_STEP = 200;
 
 /**
  * Questions tab screen.
@@ -49,6 +57,7 @@ interface ChipItem {
  * @returns Full-screen questions browser component
  */
 const QuestionsScreen = () => {
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const {
     themes,
@@ -60,6 +69,46 @@ const QuestionsScreen = () => {
 
   const chipListRef =
     useRef<FlatList<ChipItem>>(null);
+
+  const scrollOffsetRef = useRef(0);
+  const [canScrollLeft, setCanScrollLeft] =
+    useState(false);
+  const [canScrollRight, setCanScrollRight] =
+    useState(true);
+
+  const handleChipScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const {
+        contentOffset,
+        contentSize,
+        layoutMeasurement,
+      } = e.nativeEvent;
+      scrollOffsetRef.current = contentOffset.x;
+      setCanScrollLeft(contentOffset.x > 1);
+      setCanScrollRight(
+        contentOffset.x
+          < contentSize.width
+            - layoutMeasurement.width
+            - 1,
+      );
+    },
+    [],
+  );
+
+  const scrollChipsBy = useCallback(
+    (direction: 1 | -1) => {
+      const next = Math.max(
+        0,
+        scrollOffsetRef.current
+          + direction * SCROLL_STEP,
+      );
+      chipListRef.current?.scrollToOffset({
+        offset: next,
+        animated: true,
+      });
+    },
+    [],
+  );
 
   const chipData = useMemo<ChipItem[]>(
     () => [
@@ -196,20 +245,68 @@ const QuestionsScreen = () => {
         </View>
 
         {/* Category filter chips */}
-        <FlatList
-          ref={chipListRef}
-          horizontal
-          data={chipData}
-          renderItem={renderChip}
-          keyExtractor={chipKeyExtractor}
-          extraData={selectedTheme}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={
-            styles.chipRowContent
-          }
-          style={styles.chipRow}
-          onScrollToIndexFailed={onChipScrollFailed}
-        />
+        <View style={styles.chipSection}>
+          {IS_WEB && (
+            <Pressable
+              onPress={() => scrollChipsBy(-1)}
+              style={[
+                styles.arrowBtn,
+                !canScrollLeft
+                  && styles.arrowHidden,
+              ]}>
+              <SymbolView
+                name={{
+                  ios: 'chevron.left',
+                  android: 'chevron_left',
+                  web: 'chevron_left',
+                }}
+                size={16}
+                tintColor={
+                  theme.textSecondary
+                }
+              />
+            </Pressable>
+          )}
+          <FlatList
+            ref={chipListRef}
+            horizontal
+            data={chipData}
+            renderItem={renderChip}
+            keyExtractor={chipKeyExtractor}
+            extraData={selectedTheme}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={
+              styles.chipRowContent
+            }
+            style={styles.chipRow}
+            onScroll={handleChipScroll}
+            scrollEventThrottle={16}
+            onScrollToIndexFailed={
+              onChipScrollFailed
+            }
+          />
+          {IS_WEB && (
+            <Pressable
+              onPress={() => scrollChipsBy(1)}
+              style={[
+                styles.arrowBtn,
+                !canScrollRight
+                  && styles.arrowHidden,
+              ]}>
+              <SymbolView
+                name={{
+                  ios: 'chevron.right',
+                  android: 'chevron_right',
+                  web: 'chevron_right',
+                }}
+                size={16}
+                tintColor={
+                  theme.textSecondary
+                }
+              />
+            </Pressable>
+          )}
+        </View>
 
         {/* Count label */}
         <View style={styles.countRow}>
@@ -266,15 +363,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingBottom: SECTION_GAP,
   },
-  chipRow: {
-    flexGrow: 0,
-    flexShrink: 0,
+  chipSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingBottom: SECTION_GAP,
+  },
+  chipRow: {
+    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
   },
   chipRowContent: {
     paddingHorizontal: Spacing.four,
     gap: Spacing.two,
     alignItems: 'center',
+  },
+  arrowBtn: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    userSelect: 'none',
+  },
+  arrowHidden: {
+    opacity: 0,
+    pointerEvents: 'none' as const,
   },
   countRow: {
     paddingHorizontal: Spacing.four,
