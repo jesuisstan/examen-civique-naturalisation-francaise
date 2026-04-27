@@ -7,23 +7,37 @@
 
 // -- Accueil (Home / Info) screen --
 
-export const ACCUEIL_TITLE = "L'Examen Civique";
+export const ACCUEIL_TITLE = 'Devenir français';
 
 export const ACCUEIL_SUBTITLE =
-  'La Naturalisation française';
+  'Votre guide de naturalisation';
 
 export const ACCUEIL_INTRO =
-  'Depuis le 1er janvier 2026, la réussite de '
-  + "l'examen civique est une condition obligatoire "
-  + "pour l'acquisition de la nationalité française "
-  + 'par naturalisation. '
-  + "L'épreuve évalue les connaissances du candidat "
-  + 'sur les valeurs, les principes, '
-  + "l'histoire et les institutions de la France. "
-  + "Elle prend la forme d'un QCM "
-  + '(questionnaire à choix multiples) écrit.';
+  'Cette application vous accompagne dans '
+  + 'votre parcours vers la nationalité française. '
+  + 'Retrouvez les informations essentielles '
+  + 'sur la procédure, les documents nécessaires '
+  + "et préparez-vous à l'examen civique "
+  + 'grâce aux questions officielles et '
+  + 'leurs réponses suggérées.';
+
+// -- Accueil card sections --
+
+export const SECTION_PROCEDURE_TITLE =
+  'Procédure et documents';
+
+export const SECTION_EXAM_TITLE =
+  "L'examen civique";
 
 // -- Resource cards --
+
+export const NATIONALITY_CARD_TITLE =
+  'Nationalité française';
+
+export const NATIONALITY_CARD_DESCRIPTION =
+  'Mariage, naturalisation, réintégration : '
+  + 'découvrez toutes les voies d\'accès '
+  + 'à la nationalité';
 
 export const PROCEDURE_CARD_TITLE =
   'Procédure de naturalisation';
@@ -47,12 +61,20 @@ export const PDF_CARD_DESCRIPTION =
   + 'connaissance publié par le Ministère '
   + "de l'Intérieur";
 
-export const QUESTIONS_PAGE_CARD_TITLE =
-  'Questions de connaissance';
+export const FRENCH_LEVEL_CARD_TITLE =
+  'Justifier son niveau en français';
 
-export const QUESTIONS_PAGE_CARD_DESCRIPTION =
-  'Consultez les questions officielles sur le site '
-  + "du Ministère de l'Intérieur";
+export const FRENCH_LEVEL_CARD_DESCRIPTION =
+  'Diplômes et tests acceptés pour prouver '
+  + 'votre maîtrise du français (niveau B2)';
+
+export const CHARTE_CARD_TITLE =
+  'Charte des droits et devoirs';
+
+export const CHARTE_CARD_DESCRIPTION =
+  'Charte des droits et devoirs du citoyen '
+  + 'français — document à connaître '
+  + 'pour la naturalisation (Légifrance)';
 
 // -- Disclaimer --
 

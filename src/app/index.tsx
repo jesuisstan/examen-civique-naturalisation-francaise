@@ -17,15 +17,26 @@ import {
   ACCUEIL_INTRO,
   ACCUEIL_SUBTITLE,
   ACCUEIL_TITLE,
+  CHARTE_CARD_DESCRIPTION,
+  CHARTE_CARD_TITLE,
+  FRENCH_LEVEL_CARD_DESCRIPTION,
+  FRENCH_LEVEL_CARD_TITLE,
+  NATIONALITY_CARD_DESCRIPTION,
+  NATIONALITY_CARD_TITLE,
   PDF_CARD_DESCRIPTION,
   PDF_CARD_TITLE,
   PROCEDURE_CARD_DESCRIPTION,
   PROCEDURE_CARD_TITLE,
+  SECTION_EXAM_TITLE,
+  SECTION_PROCEDURE_TITLE,
   SIMULATOR_CARD_DESCRIPTION,
   SIMULATOR_CARD_TITLE,
 } from '@/constants/content';
 import {
   DOCUMENT_SIMULATOR_URL,
+  FRENCH_LEVEL_URL,
+  getCharteUrl,
+  NATIONALITY_OVERVIEW_URL,
   NATURALIZATION_PROCEDURE_URL,
   QUESTIONS_PAGE_URL,
 } from '@/constants/links';
@@ -43,7 +54,9 @@ import { useTheme } from '@/hooks/use-theme';
  * @param url - fully-qualified URL to open
  * @returns void
  */
-const handleOpenLink = async (url: string): Promise<void> => {
+const handleOpenLink = async (
+  url: string,
+): Promise<void> => {
   if (Platform.OS === 'web') {
     Linking.openURL(url);
   } else {
@@ -51,7 +64,17 @@ const handleOpenLink = async (url: string): Promise<void> => {
   }
 };
 
-const CARDS = [
+const PROCEDURE_CARDS = [
+  {
+    title: NATIONALITY_CARD_TITLE,
+    description: NATIONALITY_CARD_DESCRIPTION,
+    url: NATIONALITY_OVERVIEW_URL,
+    iconName: {
+      ios: 'person.text.rectangle',
+      android: 'how_to_reg',
+      web: 'how_to_reg',
+    },
+  },
   {
     title: PROCEDURE_CARD_TITLE,
     description: PROCEDURE_CARD_DESCRIPTION,
@@ -73,6 +96,19 @@ const CARDS = [
     },
   },
   {
+    title: FRENCH_LEVEL_CARD_TITLE,
+    description: FRENCH_LEVEL_CARD_DESCRIPTION,
+    url: FRENCH_LEVEL_URL,
+    iconName: {
+      ios: 'textformat.abc',
+      android: 'translate',
+      web: 'translate',
+    },
+  },
+] as const;
+
+const EXAM_CARDS = [
+  {
     title: PDF_CARD_TITLE,
     description: PDF_CARD_DESCRIPTION,
     url: QUESTIONS_PAGE_URL,
@@ -82,14 +118,23 @@ const CARDS = [
       web: 'download',
     },
   },
+  {
+    title: CHARTE_CARD_TITLE,
+    description: CHARTE_CARD_DESCRIPTION,
+    url: null,
+    iconName: {
+      ios: 'text.book.closed',
+      android: 'menu_book',
+      web: 'menu_book',
+    },
+  },
 ] as const;
 
 /**
  * Accueil (Home) screen — Tab 1.
  *
- * Presents the naturalization procedure overview,
- * action cards linking to official resources, and a
- * data-source disclaimer.
+ * Presents naturalization info, procedure links
+ * and exam preparation resources in two sections.
  *
  * @returns ScrollView-based home screen
  */
@@ -97,6 +142,13 @@ const HomeScreen = () => {
   const theme = useTheme();
   const { totalCount } = useQuestions();
   const insets = useSafeAreaInsets();
+
+  const handleCardPress = (
+    url: string | null,
+  ) => {
+    const resolved = url ?? getCharteUrl();
+    handleOpenLink(resolved);
+  };
 
   return (
     <ThemedView style={styles.screen}>
@@ -107,7 +159,8 @@ const HomeScreen = () => {
           {
             backgroundColor: theme.background,
             paddingTop: Platform.select({
-              android: insets.top + Spacing.three,
+              android:
+                insets.top + Spacing.three,
               web: Spacing.six,
               default: Spacing.three,
             }),
@@ -125,12 +178,6 @@ const HomeScreen = () => {
             style={styles.centered}>
             {ACCUEIL_SUBTITLE}
           </ThemedText>
-          <ThemedText
-            type="smallBold"
-            themeColor="accent"
-            style={styles.centered}>
-            {totalCount} questions officielles
-          </ThemedText>
         </View>
       </View>
 
@@ -139,9 +186,7 @@ const HomeScreen = () => {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.contentContainer,
-          {
-            paddingBottom: Spacing.four,
-          },
+          { paddingBottom: Spacing.four },
         ]}>
         <ThemedView style={styles.inner}>
           <ThemedText
@@ -150,18 +195,48 @@ const HomeScreen = () => {
             {ACCUEIL_INTRO}
           </ThemedText>
 
-          <View style={styles.cardsSection}>
-            {CARDS.map((card) => (
-              <ActionCard
-                key={card.url}
-                title={card.title}
-                description={card.description}
-                iconName={card.iconName}
-                onPress={() =>
-                  handleOpenLink(card.url)
-                }
-              />
-            ))}
+          {/* Section 1 — Procedure */}
+          <View style={styles.section}>
+            <ThemedText
+              type="smallBold"
+              themeColor="textSecondary">
+              {SECTION_PROCEDURE_TITLE}
+            </ThemedText>
+            <View style={styles.cardsGroup}>
+              {PROCEDURE_CARDS.map((card) => (
+                <ActionCard
+                  key={card.url}
+                  title={card.title}
+                  description={card.description}
+                  iconName={card.iconName}
+                  onPress={() =>
+                    handleCardPress(card.url)
+                  }
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Section 2 — Exam */}
+          <View style={styles.section}>
+            <ThemedText
+              type="smallBold"
+              themeColor="textSecondary">
+              {SECTION_EXAM_TITLE}
+            </ThemedText>
+            <View style={styles.cardsGroup}>
+              {EXAM_CARDS.map((card) => (
+                <ActionCard
+                  key={card.title}
+                  title={card.title}
+                  description={card.description}
+                  iconName={card.iconName}
+                  onPress={() =>
+                    handleCardPress(card.url)
+                  }
+                />
+              ))}
+            </View>
           </View>
         </ThemedView>
       </ScrollView>
@@ -205,7 +280,10 @@ const styles = StyleSheet.create({
   intro: {
     lineHeight: 24,
   },
-  cardsSection: {
+  section: {
     gap: Spacing.three,
+  },
+  cardsGroup: {
+    gap: Spacing.two,
   },
 });
